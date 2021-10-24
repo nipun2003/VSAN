@@ -1,7 +1,7 @@
 package com.nipunapps.vsan.data.remote.dto
 
 import kotlinx.serialization.Serializable
-
+import android.net.Uri
 @Serializable
 data class Video (
     val title : String,

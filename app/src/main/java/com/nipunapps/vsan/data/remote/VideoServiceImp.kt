@@ -9,25 +9,25 @@ import io.ktor.client.request.*
 class VideoServiceImp(
     private val client: HttpClient
 ) : VideoService {
-    override suspend fun getVideos(): Resource<List<Video>> {
+    override suspend fun getVideos(): List<Video> {
         return try {
-            Resource.success(client.get {
+            client.get {
                 url(HttpRoutes.VIDEOS)
-            })
+            }
         } catch (e: RedirectResponseException) {
             //3xx- response
             println("Error : ${e.response.status.description}")
-            Resource.error(e.response.status.description,null)
+            emptyList()
         } catch (e: ClientRequestException) {
             //4xx- response
             println("Error : ${e.response.status.description}")
-            Resource.error(e.response.status.description,null)
+            emptyList()
         } catch (e: ServerResponseException) {
             //5xx- response
             println("Error : ${e.response.status.description}")
-            Resource.error(e.response.status.description,null)
+            emptyList()
         } catch (e: Exception) {
-            Resource.error(e.message.toString(),null)
+            emptyList()
         }
     }
 }

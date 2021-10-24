@@ -10,4 +10,6 @@
     <color name="white">#FFFFFFFF</color>
     <color name="black_shade">#191919</color>
     <color name="seek_color">#FFe68122</color>
+    <color name="low_opacity_bg">#80FFFFFF</color>
+    <color name="low_opacity_black">#80000000</color>
 </resources>

@@ -1,4 +1,4 @@
-package com.nipunapps.vsan.utils
+package com.nipunapps.vsan.networkmanager
 
 import android.content.BroadcastReceiver
 import android.content.Context

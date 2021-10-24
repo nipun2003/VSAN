@@ -3,17 +3,28 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="../../../../layout/custom_preview.xml" value="0.33229166666666665" />
+        <entry key="../../Android/Sdk/caches/transforms-3/8c3895096e85da25f6748ac38818c379/transformed/jetified-exoplayer-ui-2.15.1/res/drawable-anydpi-v21/exo_icon_next.xml" value="0.3333333333333333" />
+        <entry key="../../Android/Sdk/caches/transforms-3/8c3895096e85da25f6748ac38818c379/transformed/jetified-exoplayer-ui-2.15.1/res/drawable-anydpi-v21/exo_icon_previous.xml" value="0.3333333333333333" />
+        <entry key="app/src/main/res/drawable/ic_aspect_ration.xml" value="0.3333333333333333" />
+        <entry key="app/src/main/res/drawable/ic_download.xml" value="0.3333333333333333" />
         <entry key="app/src/main/res/drawable/ic_pause.xml" value="0.31851851851851853" />
         <entry key="app/src/main/res/drawable/ic_play.xml" value="0.31851851851851853" />
+        <entry key="app/src/main/res/drawable/ic_rew_foreground.xml" value="0.3333333333333333" />
         <entry key="app/src/main/res/drawable/ic_skipf_10.xml" value="0.31851851851851853" />
         <entry key="app/src/main/res/drawable/ic_skipr_10.xml" value="0.31851851851851853" />
+        <entry key="app/src/main/res/drawable/progress_bar_bg.xml" value="0.3333333333333333" />
         <entry key="app/src/main/res/drawable/seekbar_thumb.xml" value="0.3333333333333333" />
         <entry key="app/src/main/res/layout-land/activity_player.xml" value="0.26851851851851855" />
         <entry key="app/src/main/res/layout-land/player_control.xml" value="0.26851851851851855" />
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.29528985507246375" />
         <entry key="app/src/main/res/layout/activity_player.xml" value="0.3171875" />
+        <entry key="app/src/main/res/layout/custom_player_control_view.xml" value="0.3171875" />
         <entry key="app/src/main/res/layout/video_list.xml" value="0.3171875" />
         <entry key="app/src/main/res/layout/video_list_frag.xml" value="0.3171875" />
+        <entry key="app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.3333333333333333" />
+        <entry key="app/src/main/res/mipmap-anydpi-v26/ic_rew.xml" value="0.3333333333333333" />
+        <entry key="app/src/main/res/mipmap-anydpi-v26/ic_rew_round.xml" value="0.3333333333333333" />
       </map>
     </option>
   </component>

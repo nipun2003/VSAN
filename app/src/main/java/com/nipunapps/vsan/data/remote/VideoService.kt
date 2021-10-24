@@ -9,7 +9,7 @@ import io.ktor.client.features.json.serializer.*
 import io.ktor.client.features.logging.*
 
 interface VideoService {
-    suspend fun getVideos() : Resource<List<Video>>
+    suspend fun getVideos() : List<Video>
     companion object{
         fun create() : VideoService {
             return VideoServiceImp(

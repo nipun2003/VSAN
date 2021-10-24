@@ -2,6 +2,7 @@ plugins {
     id 'com.android.application'
     id 'kotlin-android'
     id 'org.jetbrains.kotlin.plugin.serialization'
+    id 'kotlin-kapt'
 }
 
 android {
@@ -69,4 +70,17 @@ dependencies {
     // Glide
     implementation 'com.github.bumptech.glide:glide:4.12.0'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.12.0'
+
+    // ExoPlayer
+    api "com.google.android.exoplayer:exoplayer-core:2.15.1"
+    api "com.google.android.exoplayer:exoplayer-ui:2.15.1"
+    api "com.google.android.exoplayer:extension-mediasession:2.15.1"
+
+    //Permission library
+    implementation 'com.karumi:dexter:6.2.3'
+
+    // Room components
+    implementation "androidx.room:room-ktx:$rootProject.roomVersion"
+    kapt "androidx.room:room-compiler:$rootProject.roomVersion"
+    androidTestImplementation "androidx.room:room-testing:$rootProject.roomVersion"
 }
