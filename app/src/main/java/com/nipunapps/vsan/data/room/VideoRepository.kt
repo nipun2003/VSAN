@@ -4,6 +4,7 @@ import android.content.Context
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.MediaMetadataCompat.*
 import android.util.Log
+import androidx.lifecycle.LiveData
 import com.nipunapps.vsan.data.remote.VideoService
 import com.nipunapps.vsan.utils.Resource
 import kotlinx.serialization.decodeFromString
@@ -34,6 +35,10 @@ class VideoRepository(private val context: Context) {
         videoDao.insert(VideoEntity(Json.encodeToString(videoItem),videoItem.metaData.id))
     }
 
+    suspend fun update(videoItem: VideoItem){
+        videoDao.update(Json.encodeToString(videoItem),videoItem.metaData.id)
+    }
+
     private fun getAllVideos() : List<VideoEntity> = videoDao.getAllVideos()
 
     fun getVideos() : Resource<ArrayList<VideoItem>>{
@@ -50,4 +55,6 @@ class VideoRepository(private val context: Context) {
         }
         return videos
     }
+
+    fun getLiveSnapshot() : LiveData<List<VideoEntity>> = videoDao.getLiveSnapshot()
 }

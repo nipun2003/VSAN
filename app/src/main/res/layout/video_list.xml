@@ -35,4 +35,12 @@
             android:progressDrawable="@drawable/progress_bar_bg"
             android:rotation="-90" />
     </RelativeLayout>
+
+    <ProgressBar
+        android:id="@+id/hr_progress"
+        android:layout_width="match_parent"
+        android:layout_height="3dp"
+        style="@style/Theme.VSAN.Horizontal_progress"
+        android:layout_gravity="bottom"
+        android:visibility="gone"/>
 </FrameLayout>

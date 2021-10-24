@@ -8,6 +8,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.ProgressBar
 import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
@@ -32,6 +33,7 @@ class VideoAdapter(private val context: Context) : RecyclerView.Adapter<VideoAda
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val image = itemView.findViewById<ImageView>(R.id.videoImage)
         val download: RelativeLayout = itemView.findViewById(R.id.download_button)
+        val hrProgress: ProgressBar = itemView.findViewById(R.id.hr_progress)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -42,9 +44,10 @@ class VideoAdapter(private val context: Context) : RecyclerView.Adapter<VideoAda
         val videoItem = videos[position]
         val video = videoItem.metaData
         holder.download.bringToFront()
+        setUpHrProgress(holder, videoItem)
         val title = "${video.title}${video.videoLink.substring(video.videoLink.lastIndexOf('.'))}"
         CoroutineScope(Dispatchers.IO).launch {
-            if(title.isOfflineAvailable()){
+            if (title.isOfflineAvailable()) {
                 CoroutineScope(Dispatchers.Main).launch {
                     holder.download.visibility = View.GONE
                 }
@@ -52,7 +55,7 @@ class VideoAdapter(private val context: Context) : RecyclerView.Adapter<VideoAda
         }
         holder.download.setOnClickListener {
             CoroutineScope(Dispatchers.IO).launch {
-                downloadRequest.startDownload(video.videoLink, title,it)
+                downloadRequest.startDownload(video.videoLink, title, it)
             }
         }
         loadImage(context, video.imageLink, holder.image)
@@ -65,7 +68,17 @@ class VideoAdapter(private val context: Context) : RecyclerView.Adapter<VideoAda
         }
     }
 
-    private fun  String.isOfflineAvailable() :Boolean{
+
+    private fun setUpHrProgress(holder: ViewHolder, videoItem: VideoItem) {
+        if (videoItem.currentDuration > 0) {
+            holder.hrProgress.visibility = View.VISIBLE
+            holder.hrProgress.max = 100
+            holder.hrProgress.progress =
+                ((videoItem.currentDuration.toInt() * 100) / videoItem.maxDuration).toInt()
+        } else if (videoItem.currentDuration == 0L) holder.hrProgress.visibility = View.GONE
+    }
+
+    private fun String.isOfflineAvailable(): Boolean {
         var found = false
         context.getExternalFilesDir(Constants.VIDEO_DIRECTORY)?.listFiles()?.forEach { file ->
             if (this.equals(file.name)) {

@@ -24,6 +24,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
+import com.nipunapps.vsan.data.room.VideoRepository
 import com.nipunapps.vsan.networkmanager.PermissionReq
 import com.nipunapps.vsan.utils.logError
 import com.nipunapps.vsan.utils.showToast
@@ -33,6 +34,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var networkProvider: NetworkProvider
     private lateinit var viewModel: MainViewModel
     private lateinit var storageUtil: StorageUtil
+    private lateinit var videoRepository: VideoRepository
 
     @RequiresApi(VERSION_CODES.R)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -42,6 +44,7 @@ class MainActivity : AppCompatActivity() {
         storageUtil = StorageUtil(this)
         networkProvider = NetworkProvider(this)
         viewModel = ViewModelProvider(this)[MainViewModel::class.java]
+        videoRepository = VideoRepository(this)
         networkProvider.observe(this, { connection ->
             if (connection) {
                 viewModel.fetchData()
@@ -49,6 +52,9 @@ class MainActivity : AppCompatActivity() {
             } else {
                 showToast(this, "No network connection")
             }
+        })
+        videoRepository.getLiveSnapshot().observe(this,{
+            viewModel.fetchVideos()
         })
         makeAppDirectory()
     }

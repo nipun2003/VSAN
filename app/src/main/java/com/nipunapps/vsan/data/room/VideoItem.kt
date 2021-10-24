@@ -10,4 +10,5 @@ class VideoItem( val metaData : Video) : java.io.Serializable {
     var maxDuration : Long = 0L
     var currentDuration : Long = 0L
     var aspectRatio = 0
+    var downloadProgress = 0
 }

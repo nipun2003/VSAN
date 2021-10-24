@@ -31,23 +31,28 @@ import com.nipunapps.vsan.BuildConfig
 import com.nipunapps.vsan.data.remote.dto.ExoItem
 import com.nipunapps.vsan.data.room.VideoItem
 import com.nipunapps.vsan.data.room.VideoRepository
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.io.File
 
 class PlayerActivity : AppCompatActivity() {
 
     //Variables
     private lateinit var binding: ActivityPlayerBinding
-    private var videoItem: ArrayList<ExoItem> = ArrayList()
     private var player: SimpleExoPlayer? = null
     private var playbackPosition = 0L
     private var currentWindow = 0
     private var currentPlayingPosition = 0
     private val playbackStateListener: Player.EventListener = playbackStateListener()
     private lateinit var storageUtil: StorageUtil
-    private var currentPlayItem: ExoItem? = null
     private lateinit var videoRepository: VideoRepository
+    private var fromOffline = false
+    private var currentPlayVideoItem: VideoItem? = null
+    private var fromOfflineUri: Uri? = null
+    private var currentPlayItem : ExoItem? = null
 
-    private var ASPECT_RATIO: MutableLiveData<Int> = MutableLiveData()
+    private var ASPECT_RATIO: MutableLiveData<Int> = MutableLiveData(0)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,55 +63,61 @@ class PlayerActivity : AppCompatActivity() {
         restartPlayer(intent)
     }
 
-    private fun restartPlayer(intent: Intent?){
+    private fun restartPlayer(intent: Intent?) {
         videoRepository = VideoRepository(this)
-        videoItem.clear()
         if (intent?.data != null) {
-            currentPlayItem = ExoItem(getFileName(intent?.data!!), intent?.data!!)
-            videoItem.add(currentPlayItem!!)
+            fromOfflineUri = intent.data!!
+            fromOffline = true
+            currentPlayItem = ExoItem(getFileName(intent.data!!), intent.data!!)
         } else {
+            fromOffline = false
             currentPlayingPosition = intent?.getIntExtra(Constants.POSITION, 0)!!
             val bundle = intent?.extras
             val videoList =
                 bundle?.getParcelableArrayList<Parcelable>(Constants.VIDEO_LIST) as ArrayList<VideoItem>
-            videoList?.let {
-                getVideosFromVideoItems(it).forEach { video ->
-                    val item = video.toExoItem()
+            videoList.let {
+                currentPlayVideoItem = it[currentPlayingPosition]
+                if(currentPlayVideoItem?.offlineUri == null){
+                    val video = currentPlayVideoItem?.metaData
                     getExternalFilesDir(Constants.VIDEO_DIRECTORY)?.listFiles()?.forEach { file ->
-                        if (video.title.equals(
+                        if (video?.title.equals(
                                 file.name.substring(
                                     0,
                                     file.name.lastIndexOf('.')
                                 )
                             )
                         ) {
-                            item.offlineUri = FileProvider.getUriForFile(
-                                this,
-                                BuildConfig.APPLICATION_ID + ".provider",
-                                file
-                            )
+                            currentPlayVideoItem?.offlineUri= file.absolutePath
                             Log.e("Found", "true")
                         }
                     }
-                    videoItem.add(item)
                 }
             }
-            currentPlayItem = videoItem[currentPlayingPosition]
-            Log.e("Nipun",currentPlayItem!!.title)
+            currentPlayVideoItem?.let {
+                currentPlayItem = ExoItem(it.metaData.title,Uri.parse(it.metaData.videoLink))
+                currentPlayItem!!.offlineUri = getUriFromPath(it.offlineUri)
+                playbackPosition = it.currentDuration
+            }
         }
-        ASPECT_RATIO.postValue(storageUtil.getInt(Constants.ASPECT_RATIO_KEY))
+        ASPECT_RATIO.postValue(currentPlayVideoItem?.aspectRatio)
         binding.songTitle.text = currentPlayItem?.title
-        playbackPosition = storageUtil.getLong(currentPlayItem!!.onlineUri.toString())
-        Log.e("Playback", "" + playbackPosition)
-        Log.e("Found", currentPlayItem!!.onlineUri.toString())
         initialisePlayer()
         ASPECT_RATIO.observe(this, { ratio ->
             binding.videoView.resizeMode = ratio
-            storageUtil.storeInteger(Constants.ASPECT_RATIO_KEY, ratio)
+            currentPlayVideoItem?.aspectRatio = ratio
         })
         binding.aspectRatio.setOnClickListener {
             ASPECT_RATIO.postValue(if (ASPECT_RATIO.value == 4) 0 else ASPECT_RATIO.value?.plus(1))
         }
+    }
+
+    private fun getUriFromPath(path: String?) : Uri? {
+        if(path == null) return null
+        return FileProvider.getUriForFile(
+            this,
+            BuildConfig.APPLICATION_ID + ".provider",
+            File(path)
+        )
     }
 
     private fun initialisePlayer() {
@@ -120,15 +131,21 @@ class PlayerActivity : AppCompatActivity() {
                     }
                 }
                 try {
-                    exoPlayer.setMediaItem(
-                        currentPlayItem!!.toMediaItem()
-                    )
+                    if (fromOffline) {
+                        exoPlayer.setMediaItem(MediaItem.fromUri(fromOfflineUri!!))
+                    } else
+                        exoPlayer.setMediaItem(
+                            currentPlayItem!!.toMediaItem()
+                        )
                     exoPlayer.seekTo(currentWindow, playbackPosition)
                     exoPlayer.playWhenReady = true
                     exoPlayer.addListener(playbackStateListener)
                     exoPlayer.prepare()
                 } catch (e: Exception) {
-                    exoPlayer.setMediaItem((currentPlayItem!!.onlineUri).toMediaItem())
+                    if (fromOffline) {
+                        exoPlayer.setMediaItem(MediaItem.fromUri(fromOfflineUri!!))
+                    } else
+                        exoPlayer.setMediaItem((currentPlayItem!!.onlineUri).toMediaItem())
                     exoPlayer.seekTo(currentWindow, playbackPosition)
                     exoPlayer.playWhenReady = true
                     exoPlayer.addListener(playbackStateListener)
@@ -143,7 +160,9 @@ class PlayerActivity : AppCompatActivity() {
                 ExoPlayer.STATE_IDLE -> binding.progressBar.visibility = View.VISIBLE
                 ExoPlayer.STATE_BUFFERING -> binding.progressBar.visibility = View.VISIBLE
                 ExoPlayer.STATE_READY -> {
+                    currentPlayVideoItem?.maxDuration = player?.duration!!
                     binding.progressBar.visibility = View.GONE
+                    saveToRoom()
                 }
                 ExoPlayer.STATE_ENDED -> {
                     finish()
@@ -197,6 +216,13 @@ class PlayerActivity : AppCompatActivity() {
         restartPlayer(intent)
     }
 
+    private fun saveToRoom(){
+        currentPlayVideoItem?.currentDuration = playbackPosition
+        CoroutineScope(Dispatchers.IO).launch {
+            currentPlayVideoItem?.let { videoRepository.update(it) }
+        }
+    }
+
     @RequiresApi(Build.VERSION_CODES.O)
     private fun setPictureInPicture() {
         val aspectRation = Rational(binding.videoView.width, binding.videoView.height)
@@ -237,7 +263,9 @@ class PlayerActivity : AppCompatActivity() {
             if (playbackPosition / 5000 == (player!!.duration) / 5000) {
                 playbackPosition = 0
             }
-            storageUtil.storeLong(currentPlayItem!!.onlineUri.toString(), playbackPosition)
+            currentPlayVideoItem?.currentDuration = playbackPosition
+            currentPlayVideoItem?.maxDuration = this.duration
+            saveToRoom()
             currentWindow = this.currentWindowIndex
             playWhenReady = this.playWhenReady
             removeListener(playbackStateListener)

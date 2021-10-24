@@ -20,4 +20,7 @@ interface VideoDao {
 
     @Query("Select * from $VIDEO_DATABASE order by id ASC")
     fun getAllVideos() : List<VideoEntity>
+
+    @Query("Select * from $VIDEO_DATABASE order by id ASC")
+    fun getLiveSnapshot() : LiveData<List<VideoEntity>>
 }
